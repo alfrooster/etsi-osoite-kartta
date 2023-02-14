@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { StyleSheet, View, Button, TextInput, Alert } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
+import * as Location from 'expo-location';
 
 export default function App() {
-  const [region, setRegion] = useState({
+  const [region, setRegion] = useState({ // region is haaga-helia, if can't get device location 
     latitude: 60.2,
     longitude: 24.934,
     latitudeDelta: 0.0322,
@@ -14,6 +15,27 @@ export default function App() {
     latitude: 60.2013,
     longitude: 24.934
   });
+
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('No permission to get location')
+        return;
+      }
+      let location = await Location.getCurrentPositionAsync({});
+      setRegion({ // current location coordinates for region
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+        latitudeDelta: 0.0322,
+        longitudeDelta: 0.0221
+      });
+      setData({ // current location coordinates for marker
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude
+      });
+    })();
+  }, [])
 
   const search = () => {
     fetch(`http://www.mapquestapi.com/geocoding/v1/address?key=hoZvdAWRuIgL9ynTqcTAQVblZcAmArHC&location=${place}`)
